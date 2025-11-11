@@ -71,6 +71,9 @@ tfidf_vectorizer = TfidfVectorizer(
     ngram_range=(1,3),
     dtype=np.float32
 )
+tfidf_matrix = tfidf_vectorizer.fit_transform(amazon_df['keywords']).toarray()
+
+```
 
 ## 🔢 Cosine Similarity
 
@@ -79,6 +82,52 @@ from sklearn.metrics.pairwise import cosine_similarity
 similarity = cosine_similarity(tfidf_matrix)
 
 ```
+## 🧠 Product Recommendation Function
+
+```
+def product_recommender(query):
+    matches = amazon_df[amazon_df['name'].str.lower() == query.lower()]
+    if matches.empty:
+        print(f"No product found matching '{query}'.")
+        return
+
+    product_index = matches.index[0]
+    similarity_list = list(enumerate(similarity[product_index]))
+    top_10 = sorted(similarity_list, key=lambda x: x[1], reverse=True)[1:11]
+
+    print(f"\nTop recommendations for '{query}':\n")
+    for idx, score in top_10:
+        print(f"- {amazon_df.iloc[idx]['name']}")
 
 
-tfidf_matrix = tfidf_vectorizer.fit_transform(amazon_df['keywords']).toarray()
+```
+
+## 🧠 How the Recommendation Works
+
+TF-IDF Encoding – turns product names into numerical vectors
+
+Cosine Similarity – measures how close two vectors are in meaning
+
+Ranking – sorts products by similarity score
+
+Recommendation – returns top N most similar products
+
+## 💾 Saving Model Artifacts
+
+```
+import pickle
+
+pickle.dump(similarity, open('similarity.pkl', 'wb'))
+pickle.dump(amazon_df, open('amazon_dict.pkl', 'wb'))
+
+```
+
+## 🧩 Future Improvements
+
+Add fuzzy string matching for partial search queries
+
+Use product descriptions or user reviews for deeper similarity
+
+Integrate into a Streamlit / Flask web app
+
+Combine with collaborative filtering for hybrid recommendations
